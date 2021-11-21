@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-
 import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
@@ -50,17 +49,18 @@ public class ProductService {
   }
 
   public void update(final Product product) {
-    final int index = PRODUCTS.indexOf(product);
-    if (product == null || index == -1) {
+    Optional<Product> optionalProduct =
+        PRODUCTS.stream().filter(p -> p.getId() == product.getId()).findFirst();
+    if (optionalProduct.isEmpty()) {
       throw new IllegalArgumentException("Invalid Product data");
     }
-    PRODUCTS.set(index, product);
+    PRODUCTS.set(PRODUCTS.indexOf(optionalProduct.get()), product);
     LOGGER.info("Product with id {} successfully updated.", product.getId());
   }
 
   public void delete(final Product product) {
     final int index = PRODUCTS.indexOf(product);
-    if (product == null || index == -1) {
+    if (index == -1) {
       throw new IllegalArgumentException("Invalid Product data");
     }
     PRODUCTS.remove(index);
