@@ -21,6 +21,11 @@ public class ProductController {
     this.productService = productService;
   }
 
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<String> illegalArgumentExcHandler(IllegalArgumentException e) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+  }
+
   @GetMapping
   public ResponseEntity<List<Product>> getAll() {
     return new ResponseEntity<>(productService.getAll(), HttpStatus.OK);
@@ -28,12 +33,8 @@ public class ProductController {
 
   @GetMapping("/{id}")
   public ResponseEntity<?> getProductById(@PathVariable final Integer id) {
-    Optional<Product> optionalProduct;
-    try {
-      optionalProduct = productService.findById(id);
-    } catch (IllegalArgumentException ex) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-    }
+    Optional<Product> optionalProduct = productService.findById(id);
+
     if (optionalProduct.isPresent()) {
       final Product product = optionalProduct.get();
       return new ResponseEntity<>(product, HttpStatus.OK);
@@ -48,11 +49,8 @@ public class ProductController {
     if (productService.getAll().contains(product)) {
       return new ResponseEntity<>(HttpStatus.CONFLICT);
     }
-    try {
-      productService.add(product);
-    } catch (IllegalArgumentException ex) {
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
+    productService.add(product);
+
     final HttpHeaders httpHeaders = new HttpHeaders();
     httpHeaders.setLocation(
         ucBuilder.path("/product/{id}").buildAndExpand(product.getId()).toUri());
@@ -61,12 +59,8 @@ public class ProductController {
 
   @PutMapping
   public ResponseEntity<HttpStatus> update(@RequestBody final Product product) {
-    Optional<Product> optionalProduct;
-    try {
-      optionalProduct = productService.findById(product.getId());
-    } catch (IllegalArgumentException ex) {
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
+    Optional<Product> optionalProduct = productService.findById(product.getId());
+
     if (optionalProduct.isPresent()) {
       productService.update(product);
       return new ResponseEntity<>(HttpStatus.OK);
@@ -76,12 +70,8 @@ public class ProductController {
 
   @DeleteMapping("/{id}")
   public ResponseEntity<HttpStatus> delete(@PathVariable final Integer id) {
-    Optional<Product> optionalProduct;
-    try {
-      optionalProduct = productService.findById(id);
-    } catch (IllegalArgumentException ex) {
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
+    Optional<Product> optionalProduct = productService.findById(id);
+
     if (optionalProduct.isPresent()) {
       productService.delete(optionalProduct.get());
       return new ResponseEntity<>(HttpStatus.OK);
